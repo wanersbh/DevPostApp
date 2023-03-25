@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     Container,
     Name,
@@ -14,34 +14,64 @@ import {
 
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-export default function PostsList() {
+import { formatDistance } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
+export default function PostsList({ data, userId }) {
+
+    const [likePost, setLikePost] = useState(data?.likes);
+
+    function formatTimePost() {
+        // console.log(new Date(data?.created.seconds * 1000));
+        const datePost = new Date(data?.created.seconds * 1000);
+
+        return formatDistance(
+            new Date(),
+            datePost,
+            {
+                locale: ptBR
+            }
+        )
+    }
+
     return (
         <Container>
             <Hearder>
-                <Avatar
-                    source={require('../../assets/avatar.png')}
-                />
+                {data.avatarUrl ? (
+                    <Avatar
+                        source={{ uri: data.avatarUrl }}
+                    />
+
+                ) : (
+                    <Avatar
+                        source={require('../../assets/avatar.png')}
+                    />
+
+                )}
                 <Name numberOfLines={1}>
-                    Sujeito Programador
+                    {data?.autor}
                 </Name>
             </Hearder>
 
             <ContentView>
-                <Content>Todo conteudo do post aqui</Content>
+                <Content>{data?.content}</Content>
             </ContentView>
 
             <Actions>
                 <LikeButton>
-                    <Like>12</Like>
+                    <Like>
+                        {likePost === 0 ? '' : likePost}
+                    </Like>
+
                     <Icon
-                        name="heart-plus-outline"
+                        name={likePost === 0 ? "heart-plus-outline" : "cards-heart"}
                         size={20}
                         color="#E52246"
                     />
                 </LikeButton>
 
                 <TimePost>
-                    há um minuto
+                    {formatTimePost()}
                 </TimePost>
 
             </Actions>
