@@ -17,13 +17,13 @@ export default function Home() {
 
   const { user } = useContext(AuthContext);
   const navigation = useNavigation();
-  const [posts, setPosts] = useState([
-    { id: '1', content: 'TESTE123' },
-    { id: '2', content: 'SEGUNDO POST' },
-    { id: '3', content: 'TERCEIRO POST' }
-  ]);
+  const [posts, setPosts] = useState([]);
 
   const [loading, setLoading] = useState(true);
+
+  const [loadingRefresh, setLoadingRefresh] = useState(false);
+  const [lastItem, setLastItem] = useState('');
+  const [emptyList, setEmptyList] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -47,7 +47,9 @@ export default function Home() {
                 })
               })
 
+              setEmptyList(!!snapshot.empty)
               setPosts(postList);
+              setLastItem(snapshot.docs[snapshot.docs.length - 1]);
               setLoading(false);
 
             }
@@ -64,6 +66,36 @@ export default function Home() {
     }, [])
   );
 
+  function handleRefreshPosts() {
+    setLoadingRefresh(true);
+
+    firestore().collection('posts')
+      .orderBy('created', 'desc')
+      .limit(5)
+      .get()
+      .then((snapshot) => {
+
+        setPosts([]);
+        const postList = [];
+
+        snapshot.docs.map(u => {
+          postList.push({
+            ...u.data(),
+            id: u.id
+          })
+        })
+
+        setEmptyList(false);
+        setPosts(postList);
+        setLastItem(snapshot.docs[snapshot.docs.length - 1]);
+        setLoading(false);
+
+      })
+
+      setLoadingRefresh(false);
+
+  }
+
 
   return (
     <Container>
@@ -77,12 +109,16 @@ export default function Home() {
         (<ListPosts
           data={posts}
           showsVerticalScrollIndicator={false}
-          renderItem={({item}) => (
+          renderItem={({ item }) => (
             <PostsList
               data={item}
               userId={user?.uid}
             />
           )}
+
+          refreshing={loadingRefresh}
+          onRefresh={handleRefreshPosts}
+
         />)
       }
 
