@@ -11,6 +11,7 @@ import { ButtonPost, Container, ListPosts } from './styles';
 import { AuthContext } from '../../contexts/auth';
 
 import firestore from '@react-native-firebase/firestore';
+import PostsList from '../../components/PostsList';
 
 export default function Home() {
 
@@ -47,7 +48,7 @@ export default function Home() {
               })
 
               setPosts(postList);
-              // setLoading(false);
+              setLoading(false);
 
             }
 
@@ -69,13 +70,18 @@ export default function Home() {
       <Header />
 
       {loading ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-          <ActivityIndicator size={60} color='#E52246'  /> 
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size={60} color='#E52246' />
         </View>
-      ):
+      ) :
         (<ListPosts
           data={posts}
-          renderItem={(item) => (<Text>TESTE</Text>)}
+          renderItem={({item}) => (
+            <PostsList
+              data={item}
+              userId={user?.uid}
+            />
+          )}
         />)
       }
 
