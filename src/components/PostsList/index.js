@@ -18,9 +18,12 @@ import { formatDistance } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import firestore from '@react-native-firebase/firestore';
 
+import { useNavigation } from '@react-navigation/native';
+
 export default function PostsList({ data, userId }) {
 
     const [likePost, setLikePost] = useState(data?.likes);
+    const navigation = useNavigation();
 
     function formatTimePost() {
         // console.log(new Date(data?.created.seconds * 1000));
@@ -35,27 +38,27 @@ export default function PostsList({ data, userId }) {
         )
     }
 
-    async function handleLikePost(id, likes){
-        const docId =`${userId}_${id}`;
+    async function handleLikePost(id, likes) {
+        const docId = `${userId}_${id}`;
 
         //checar se o post já foi curtido
         const doc = await firestore().collection('likes')
-        .doc(docId).get();
+            .doc(docId).get();
         console.log('Id', id, 'Likes', likes);
 
-        if(doc.exists){
+        if (doc.exists) {
             //Que dizer que já curtiu esse post então precisamos remover o like
             await firestore().collection('posts')
-            .doc(id).update({
-                likes: likes - 1
-            })
-            
+                .doc(id).update({
+                    likes: likes - 1
+                })
+
             await firestore().collection('likes').doc(docId)
-            .delete()
-            .then(()=>{
-                setLikePost(likes - 1)
-            })
-           return;
+                .delete()
+                .then(() => {
+                    setLikePost(likes - 1)
+                })
+            return;
         }
 
         //Precisamos dar o like no post
@@ -66,14 +69,14 @@ export default function PostsList({ data, userId }) {
 
         await firestore().collection('posts').doc(id).update({
             likes: likes + 1
-        }).then(()=>{
+        }).then(() => {
             setLikePost(likes + 1)
         })
     }
 
     return (
         <Container>
-            <Hearder>
+            <Hearder onPress={() => navigation.navigate('PostsUser', { title: data.autor, userId: data.userId })}>
                 {data.avatarUrl ? (
                     <Avatar
                         source={{ uri: data.avatarUrl }}
