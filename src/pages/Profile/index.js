@@ -5,11 +5,11 @@ import { AuthContext } from '../../contexts/auth';
 
 export default function Profile() {
 
-    const { signOut } = useContext(AuthContext);
+    const { signOut, user } = useContext(AuthContext);
 
     return (
         <View>
-            <Text>TELA PROFILE</Text>
+            <Text>TELA PROFILE: {user.nome}</Text>
             <Button title='Sair' onPress={signOut} />
         </View>
     );

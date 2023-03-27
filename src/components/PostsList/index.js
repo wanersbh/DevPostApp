@@ -16,6 +16,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { formatDistance } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import firestore from '@react-native-firebase/firestore';
 
 export default function PostsList({ data, userId }) {
 
@@ -32,6 +33,42 @@ export default function PostsList({ data, userId }) {
                 locale: ptBR
             }
         )
+    }
+
+    async function handleLikePost(id, likes){
+        const docId =`${userId}_${id}`;
+
+        //checar se o post já foi curtido
+        const doc = await firestore().collection('likes')
+        .doc(docId).get();
+        console.log('Id', id, 'Likes', likes);
+
+        if(doc.exists){
+            //Que dizer que já curtiu esse post então precisamos remover o like
+            await firestore().collection('posts')
+            .doc(id).update({
+                likes: likes - 1
+            })
+            
+            await firestore().collection('likes').doc(docId)
+            .delete()
+            .then(()=>{
+                setLikePost(likes - 1)
+            })
+           return;
+        }
+
+        //Precisamos dar o like no post
+        await firestore().collection('likes').doc(docId).set({
+            postId: id,
+            userId: userId
+        })
+
+        await firestore().collection('posts').doc(id).update({
+            likes: likes + 1
+        }).then(()=>{
+            setLikePost(likes + 1)
+        })
     }
 
     return (
@@ -58,7 +95,7 @@ export default function PostsList({ data, userId }) {
             </ContentView>
 
             <Actions>
-                <LikeButton>
+                <LikeButton onPress={() => handleLikePost(data.id, likePost)}>
                     <Like>
                         {likePost === 0 ? '' : likePost}
                     </Like>
