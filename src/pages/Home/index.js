@@ -66,6 +66,7 @@ export default function Home() {
     }, [])
   );
 
+  // Buscar mais posts quando puxar sua lista pra cima
   function handleRefreshPosts() {
     setLoadingRefresh(true);
 
@@ -96,6 +97,42 @@ export default function Home() {
 
   }
 
+  // Buscar mais posts quando chegar no final da lista
+  async function getListPosts(){
+
+    if(emptyList){
+      // se buscou toda sua lista tiramos o loading
+      setLoading(false);
+      return;
+    }
+
+    if (loading) return;
+
+    firestore().collection('posts')
+    .orderBy('created', 'desc')
+    .limit(5)
+    .startAfter(lastItem)
+    .get()
+    .then((snapshot) => {
+      const postList = [];
+
+      snapshot.docs.map( u => {
+        postList.push({
+          ...u.data(),
+          id: u.id
+        })
+      })
+
+      setEmptyList(!!snapshot.empty);
+      setLastItem(snapshot.docs[snapshot.docs.length -1]);
+      setPosts( oldPosts => [...oldPosts, ...postList]);
+      setLoading(false);
+
+      console.log('BUSCANDO MAIS POSTS...');
+    })
+
+  }
+
 
   return (
     <Container>
@@ -118,6 +155,8 @@ export default function Home() {
 
           refreshing={loadingRefresh}
           onRefresh={handleRefreshPosts}
+          onEndReached={() => getListPosts()}
+          onEndReachedThreshold={0.2}
 
         />)
       }
