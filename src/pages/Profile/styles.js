@@ -56,7 +56,7 @@ export const UploadText = styled.Text`
 `;
 
 export const Avatar = styled.Image`
-    width: 160;
+    width: 160px;
     height: 160px;
     border-radius: 80px;
 `;
